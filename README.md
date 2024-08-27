@@ -1,3 +1,8 @@
+# Visual Studio Code.
+
+This project was run in Visual Studio Code. 
+On a command line run: `npm run build`.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
