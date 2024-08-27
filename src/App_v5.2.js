@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 import './App.css';
 
 function formatDate(dateString) {
@@ -22,12 +20,8 @@ function App() {
   const [pageSize] = useState(1); // Only one note per page
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const fetchNotes = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const response = await axios.get('/api/notes', {
         params: {
@@ -40,9 +34,6 @@ function App() {
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('There was an error fetching the notes!', error);
-      setError('There was an error fetching the notes. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   }, [currentPage, pageSize, searchQuery]);
 
@@ -54,8 +45,8 @@ function App() {
     setNewTitle(event.target.value);
   };
 
-  const handleContentChange = (content) => {
-    setNewNote(content);
+  const handleInputChange = (event) => {
+    setNewNote(event.target.value);
   };
 
   const handleStatusChange = (event) => {
@@ -64,8 +55,6 @@ function App() {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    setError(null);
     try {
       await axios.post('/api/notes', { title: newTitle, content: newNote, status: newStatus });
       fetchNotes();
@@ -74,23 +63,15 @@ function App() {
       setNewStatus('Open');
     } catch (error) {
       console.error('There was an error creating the note!', error);
-      setError('There was an error creating the note. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    setLoading(true);
-    setError(null);
     try {
       await axios.delete(`/api/notes/${id}`);
       fetchNotes();
     } catch (error) {
       console.error('There was an error deleting the note!', error);
-      setError('There was an error deleting the note. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -105,8 +86,8 @@ function App() {
     setEditTitle(event.target.value);
   };
 
-  const handleEditContentChange = (content) => {
-    setEditContent(content);
+  const handleEditChange = (event) => {
+    setEditContent(event.target.value);
   };
 
   const handleEditStatusChange = (event) => {
@@ -115,8 +96,6 @@ function App() {
 
   const handleEditSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    setError(null);
     try {
       await axios.put(`/api/notes/${editingNote.id}`, { title: editTitle, content: editContent, status: editStatus });
       fetchNotes();
@@ -126,9 +105,6 @@ function App() {
       setEditStatus('');
     } catch (error) {
       console.error('There was an error updating the note!', error);
-      setError('There was an error updating the note. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -151,9 +127,7 @@ function App() {
   const handlePrint = (noteId) => {
     const printUrl = `/notes/${noteId}/print`;
     const printWindow = window.open(printUrl, '_blank');
-    if (printWindow) {
-      printWindow.focus();
-    }
+    printWindow.focus();
   };
 
   return (
@@ -161,19 +135,35 @@ function App() {
       <h1>Notes</h1>
 
       {!editingNote && (
-        <form onSubmit={handleSearchSubmit} className="search-form">
+        <form onSubmit={handleSearchSubmit}>
           <input
             type="text"
             value={searchQuery}
             onChange={handleSearchChange}
             placeholder="Search notes"
-            className="search-input"
           />
-          <button type="submit" className="search-button">Search</button>
+          <button type="submit">Search</button>
         </form>
       )}
 
-      {!editingNote && !error && (
+      {!editingNote && (
+        <ul>
+          {notes.map(note => (
+            <li key={note.id}>
+              <h3>{note.title}</h3>
+              <div className="preserve-whitespace">{note.content}</div>
+              <p>Created: {formatDate(note.dateCreated)}</p>
+              <p>Last Updated: {formatDate(note.lastUpdated)}</p>
+              <p>Status: {note.status}</p>
+              <button onClick={() => handleEditClick(note)}>Edit</button>
+              <button onClick={() => handleDelete(note.id)}>Delete</button>
+              <button onClick={() => handlePrint(note.id)}>Print</button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!editingNote && (
         <div className="pagination">
           <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0}>Previous</button>
           <span>Page {currentPage + 1} of {totalPages}</span>
@@ -181,40 +171,7 @@ function App() {
         </div>
       )}
 
-      {loading ? (
-        <p>Please wait...</p>
-      ) : error ? (
-        <p>{error}</p>
-      ) : (
-        !editingNote && (
-          <ul className="note-list">
-            {notes.map(note => (
-              <li key={note.id} className="note-item">
-                <div className="note-title">{note.title}</div>
-                <div className="note-divider"></div>
-                <div className="note-content preserve-whitespace" dangerouslySetInnerHTML={{ __html: note.content }} />
-                <div className="note-divider"></div>
-                <p><b>Created:</b> {formatDate(note.dateCreated)}</p>
-                <p><b>Last Updated:</b> {formatDate(note.lastUpdated)}</p>
-                <p><b>Status:</b> {note.status}</p>
-                <button onClick={() => handleEditClick(note)}>Edit</button>
-                <button onClick={() => handleDelete(note.id)}>Delete</button>
-                <button onClick={() => handlePrint(note.id)}>Print</button>
-              </li>
-            ))}
-          </ul>
-        )
-      )}
-
-      {!editingNote && !error && (
-        <div className="pagination">
-          <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0}>Previous</button>
-          <span>Page {currentPage + 1} of {totalPages}</span>
-          <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage + 1 >= totalPages}>Next</button>
-        </div>
-      )}
-
-      {!editingNote && !error && (
+      {!editingNote && (
         <form onSubmit={handleFormSubmit}>
           <h2>New Note</h2>
           <input
@@ -224,10 +181,13 @@ function App() {
             placeholder="Enter a title"
             required
           />
-          <ReactQuill
+          <textarea
             value={newNote}
-            onChange={handleContentChange}
+            onChange={handleInputChange}
             placeholder="Enter a new note"
+            rows="4"
+            cols="50"
+            required
           />
           <select value={newStatus} onChange={handleStatusChange}>
             <option value="Open">Open</option>
@@ -251,10 +211,13 @@ function App() {
             placeholder="Edit title"
             required
           />
-          <ReactQuill
+          <textarea
             value={editContent}
-            onChange={handleEditContentChange}
+            onChange={handleEditChange}
             placeholder="Edit note content"
+            rows="4"
+            cols="50"
+            required
           />
           <select value={editStatus} onChange={handleEditStatusChange}>
             <option value="Open">Open</option>

@@ -22,12 +22,8 @@ function App() {
   const [pageSize] = useState(1); // Only one note per page
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const fetchNotes = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const response = await axios.get('/api/notes', {
         params: {
@@ -40,9 +36,6 @@ function App() {
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('There was an error fetching the notes!', error);
-      setError('There was an error fetching the notes. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   }, [currentPage, pageSize, searchQuery]);
 
@@ -64,8 +57,6 @@ function App() {
 
   const handleFormSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    setError(null);
     try {
       await axios.post('/api/notes', { title: newTitle, content: newNote, status: newStatus });
       fetchNotes();
@@ -74,23 +65,15 @@ function App() {
       setNewStatus('Open');
     } catch (error) {
       console.error('There was an error creating the note!', error);
-      setError('There was an error creating the note. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    setLoading(true);
-    setError(null);
     try {
       await axios.delete(`/api/notes/${id}`);
       fetchNotes();
     } catch (error) {
       console.error('There was an error deleting the note!', error);
-      setError('There was an error deleting the note. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -115,8 +98,6 @@ function App() {
 
   const handleEditSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    setError(null);
     try {
       await axios.put(`/api/notes/${editingNote.id}`, { title: editTitle, content: editContent, status: editStatus });
       fetchNotes();
@@ -126,9 +107,6 @@ function App() {
       setEditStatus('');
     } catch (error) {
       console.error('There was an error updating the note!', error);
-      setError('There was an error updating the note. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -147,7 +125,7 @@ function App() {
     setCurrentPage(0);
     fetchNotes();
   };
-
+  
   const handlePrint = (noteId) => {
     const printUrl = `/notes/${noteId}/print`;
     const printWindow = window.open(printUrl, '_blank');
@@ -173,7 +151,7 @@ function App() {
         </form>
       )}
 
-      {!editingNote && !error && (
+      {!editingNote && (
         <div className="pagination">
           <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0}>Previous</button>
           <span>Page {currentPage + 1} of {totalPages}</span>
@@ -181,32 +159,26 @@ function App() {
         </div>
       )}
 
-      {loading ? (
-        <p>Please wait...</p>
-      ) : error ? (
-        <p>{error}</p>
-      ) : (
-        !editingNote && (
-          <ul className="note-list">
-            {notes.map(note => (
-              <li key={note.id} className="note-item">
-                <div className="note-title">{note.title}</div>
-                <div className="note-divider"></div>
-                <div className="note-content preserve-whitespace" dangerouslySetInnerHTML={{ __html: note.content }} />
-                <div className="note-divider"></div>
-                <p><b>Created:</b> {formatDate(note.dateCreated)}</p>
-                <p><b>Last Updated:</b> {formatDate(note.lastUpdated)}</p>
-                <p><b>Status:</b> {note.status}</p>
-                <button onClick={() => handleEditClick(note)}>Edit</button>
-                <button onClick={() => handleDelete(note.id)}>Delete</button>
-                <button onClick={() => handlePrint(note.id)}>Print</button>
-              </li>
-            ))}
-          </ul>
-        )
+      {!editingNote && (
+        <ul className="note-list">
+          {notes.map(note => (
+            <li key={note.id} className="note-item">
+              <div className="note-title">{note.title}</div>
+              <div className="note-divider"></div>
+              <div className="note-content preserve-whitespace" dangerouslySetInnerHTML={{ __html: note.content }} />
+              <div className="note-divider"></div>
+              <p><b>Created:</b> {formatDate(note.dateCreated)}</p>
+              <p><b>Last Updated:</b> {formatDate(note.lastUpdated)}</p>
+              <p><b>Status:</b> {note.status}</p>
+              <button onClick={() => handleEditClick(note)}>Edit</button>
+              <button onClick={() => handleDelete(note.id)}>Delete</button>
+              <button onClick={() => handlePrint(note.id)}>Print</button>
+            </li>
+          ))}
+        </ul>
       )}
 
-      {!editingNote && !error && (
+      {!editingNote && (
         <div className="pagination">
           <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 0}>Previous</button>
           <span>Page {currentPage + 1} of {totalPages}</span>
@@ -214,7 +186,7 @@ function App() {
         </div>
       )}
 
-      {!editingNote && !error && (
+      {!editingNote && (
         <form onSubmit={handleFormSubmit}>
           <h2>New Note</h2>
           <input

@@ -1,0 +1,115 @@
+.App {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+h1 {
+  font-size: 2em;
+}
+
+form {
+  margin: 20px 0;
+}
+
+input, textarea, select {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  font-size: 1em;
+}
+
+button {
+  margin: 5px 0;
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+button[disabled] {
+  cursor: not-allowed;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  background: #f9f9f9;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+li h3 {
+  margin: 0;
+}
+
+li p {
+  margin: 5px 0;
+}
+
+button {
+  margin-right: 5px;
+}
+
+
+
+
+/* Randy Custom */
+li p b {
+  color: #11d;
+}
+
+.preserve-whitespace {
+      white-space: pre-wrap;
+}
+
+div form input, div form textarea {
+  width: 95%;
+}
+
+.ql-container {
+  height: auto !important;
+}
+
+.ql-editor {
+  min-height: 100px;
+}
+
+.search-form {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.search-button {
+  padding: 8px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background-color: #0056b3;
+}
